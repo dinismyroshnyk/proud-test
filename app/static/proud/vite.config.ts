@@ -21,4 +21,8 @@ export default defineConfig({
             input: "./src/main.ts",
         },
     },
+    server: {
+        cors: true,
+        hmr: {},
+    },
 })
