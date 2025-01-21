@@ -84,7 +84,7 @@ in
                 proxyPass = "http://localhost:8000";
                 recommendedProxySettings = true;
                 extraConfig = ''
-                    proxy_set_header Host $http_host;
+                    proxy_set_header Host $host;
                     try_files $uri /index.html =404;
                 '';
             };
