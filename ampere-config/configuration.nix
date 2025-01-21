@@ -83,16 +83,15 @@ in
             locations."/" = {
                 proxyPass = "http://localhost:8000";
                 recommendedProxySettings = true;
+                extraConfig = ''
+                    proxy_set_header Host $http_host;
+                    try_files $uri /index.html =404;
+                '';
             };
             locations."/static/" = {
                 proxyPass = "http://localhost:5173/static/";
+                recommendedProxySettings = true;
                 proxyWebsockets = true;
-                extraConfig = ''
-                    proxy_set_header Upgrade $http_upgrade;
-                    proxy_set_header Connection 'upgrade';
-                    proxy_set_header Host $host;
-                    proxy_cache_bypass $http_upgrade;
-                '';
             };
             # locations."/ws" = {
             #     proxyPass = "http://127.0.0.1:5173";
