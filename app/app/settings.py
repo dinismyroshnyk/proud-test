@@ -48,12 +48,12 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = 'app.urls'
@@ -130,13 +130,14 @@ DJANGO_VITE_DEV_MODE = True
 STATIC_ROOT = "/staticfiles"
 STATIC_URL = "/static/"
 
-DJANGO_VITE = {
-    "default": {
-        "dev_mode": True,
-        # "static_url_prefix": "static/",
-        "dev_server_port": 5173,
-    }
-}
+# DJANGO_VITE = {
+#     "default": {
+#         "dev_mode": True,
+#         # "static_url_prefix": "static/",
+#         "dev_server_port": 5173,
+
+#     }
+# }
 
 DJANGO_VITE_ASSETS_PATH = BASE_DIR / "static" / "proud" / "assets"
 STATICFILES_DIRS = [str(BASE_DIR / "static"), DJANGO_VITE_ASSETS_PATH]
