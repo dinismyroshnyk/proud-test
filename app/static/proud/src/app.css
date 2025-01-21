@@ -109,7 +109,7 @@ body {
 
 .background-image {
     width: 65%;
-    background: url('static/proud/assets/proxy-image.png') no-repeat center center;
+    background: url('/static/proud/assets/proxy-image.png') no-repeat center center;
     background-size: cover;
 }
 
