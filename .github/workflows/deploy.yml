@@ -10,28 +10,47 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            -   name: "Get latest NixOS configuration"
+            -   name: "Checkout"
                 uses: actions/checkout@v4
 
-            -   name: "Clean /proud directory on remote"
+            -   name: "Clean /testing directory on remote"
                 uses: appleboy/ssh-action@v1.2.0
                 with:
                     host: ${{ secrets.SSH_HOST }}
                     username: ${{ secrets.SSH_USERNAME }}
                     key: ${{ secrets.SSH_KEY }}
                     script: |
-                        rm -rf /proud/*
-                        mkdir -p /proud
+                        rm -rf /testing/*
+                        mkdir -p /testing
 
-            -   name: "Deploy app to remote"
+            -   name: "Deploy everything to remote"
                 uses: appleboy/scp-action@v0.1.7
                 with:
                     host: ${{ secrets.SSH_HOST }}
                     username: ${{ secrets.SSH_USERNAME }}
                     key: ${{ secrets.SSH_KEY }}
                     source: "."
-                    target: "/proud"
+                    target: "/testing"
                     timeout: 60s
+
+            -   name: "Validate and apply NixOS configuration"
+                uses: appleboy/ssh-action@v1.2.0
+                with:
+                    host: ${{ secrets.SSH_HOST }}
+                    username: ${{ secrets.SSH_USERNAME }}
+                    key: ${{ secrets.SSH_KEY }}
+                    script: |
+                        cd /testing
+                        # Test testing first
+                        rm -rf .git
+                        sudo nixos-rebuild build --flake .#ampere-config
+                        if [ $? -eq 0 ]; then
+                            sudo nixos-rebuild switch --flake .#ampere-config || true
+                        else
+                            echo "Build failed! Not applying changes."
+                            exit 1
+                        fi
+                    timeout: 300s
 
             -   name: "Run servers"
                 uses: appleboy/ssh-action@v1.2.0
@@ -40,7 +59,7 @@ jobs:
                     username: ${{ secrets.SSH_USERNAME }}
                     key: ${{ secrets.SSH_KEY }}
                     script: |
-                        cd /proud
+                        cd /testing
 
                         export PYTHONPATH=$PYTHONPATH:$(pwd)
 
@@ -65,5 +84,5 @@ jobs:
 
                         screen -ls | grep -E "^\s*[0-9]+\." | awk '{print $1}' | xargs -I{} screen -X -S {} quit || true
 
-                        screen -dmS django bash -c "cd /proud/app && python manage.py makemigrations && python manage.py migrate && python manage.py runserver"
-                        screen -dmS svelte bash -c "cd /proud/app/static/proud && npm run dev"
+                        screen -dmS django bash -c "cd /testing/app && python manage.py makemigrations && python manage.py migrate && python manage.py runserver"
+                        screen -dmS svelte bash -c "cd /testing/app/static/proud && npm run dev"
