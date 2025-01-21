@@ -16,7 +16,7 @@ export default defineConfig({
         manifest: true,
         assetsDir: "",
         emptyOutDir: true,
-        outDir: resolve("../static/proud/assets"),
+        outDir: resolve("../build"),
         rollupOptions: {
             input: "./src/main.ts",
         },

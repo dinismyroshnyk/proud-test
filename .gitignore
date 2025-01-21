@@ -6,6 +6,9 @@
 **/migrations/
 **/.env
 
+app/static/build
+**/staticfiles
+
 **/logs
 **/*.log
 **/npm-debug.log*

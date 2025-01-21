@@ -82,23 +82,7 @@ in
             enableACME = true; # No certificate provided. One will be generated.
             locations."/" = {
                 proxyPass = "http://localhost:8000";
-                recommendedProxySettings = true;
-                extraConfig = ''
-                    try_files $uri /index.html =404;
-                '';
             };
-            locations."/static/" = {
-                proxyPass = "http://localhost:5173/static/";
-                recommendedProxySettings = true;
-                proxyWebsockets = true;
-            };
-            # locations."/ws" = {
-            #     proxyPass = "http://127.0.0.1:5173";
-            #     proxyWebsockets = true;
-            # };
-            # locations."/dashboard/" = {
-            #     proxyPass = "http://127.0.0.1:19999";
-            # };
         };
     };
 
@@ -127,7 +111,7 @@ in
     };
 
     # Firewall settings.
-    networking.firewall.allowedTCPPorts = [ 80 443 5173 ];
+    networking.firewall.allowedTCPPorts = [ 80 443 ];
 
     # Remove sudo password requirement for specified users. Currently not working.
     security.sudo.extraRules = [{

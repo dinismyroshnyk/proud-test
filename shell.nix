@@ -38,8 +38,9 @@ pkgs.mkShell {
         fi
 
         alias cls='clear'
-        alias srun-open="(cd ${projectRoot}/app && python manage.py makemigrations && python manage.py migrate && python manage.py runserver > /dev/null 2>&1 &) && firefox 127.0.0.1:8000"
-        alias srun="(cd ${projectRoot}/app && python manage.py makemigrations && python manage.py migrate && python manage.py runserver)"
+        alias build='(cd ${projectRoot}/app/static/proud && npm run build && cd ${projectRoot}/app && python manage.py collectstatic)'
+        alias srun-open='(build && cd ${projectRoot}/app && python manage.py makemigrations && python manage.py migrate && python manage.py runserver > /dev/null 2>&1 &) && firefox 127.0.0.1:8000'
+        alias srun='(cd ${projectRoot}/app && python manage.py makemigrations && python manage.py migrate && python manage.py runserver)'
         alias close='pkill -f "python manage.py runserver"'
         alias drun='(cd ${projectRoot}/app/static/proud && npm run dev)'
 

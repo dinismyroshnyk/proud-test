@@ -126,16 +126,32 @@ USE_I18N = True
 
 USE_TZ = True
 
-DJANGO_VITE_DEV_MODE = True
+DJANGO_VITE_DEV_MODE = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_ROOT = "/staticfiles"
-STATIC_URL = "static/"
+DJANGO_VITE = {
+    "default": {
+        "manifest_path": BASE_DIR / "static" / "build" / ".vite" / "manifest.json",
+    }
+}
 
-DJANGO_VITE_ASSETS_PATH = BASE_DIR / "static" / "proud" / "assets"
-STATICFILES_DIRS = [str(BASE_DIR / "static"), DJANGO_VITE_ASSETS_PATH]
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+    BASE_DIR / "static" / "build",
+    BASE_DIR / "static" / "proud",
+    BASE_DIR / "static" / "proud" / "assets",
+]
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
