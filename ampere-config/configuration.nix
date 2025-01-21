@@ -85,7 +85,7 @@ in
                 proxyWebsockets = true;
             };
             locations."/static" = {
-                proxyPass = "http://127.0.0.1:8000/static";
+                proxyPass = "http://localhost:5173/static";
                 proxyWebsockets = true;
             };
             # locations."/ws" = {
