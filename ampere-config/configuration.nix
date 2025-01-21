@@ -84,13 +84,13 @@ in
                 proxyPass = "http://127.0.0.1:8000";
                 proxyWebsockets = true;
             };
-            locations."/ws" = {
-                proxyPass = "http://127.0.0.1:5173";
-                proxyWebsockets = true;
-            };
-            locations."/dashboard/" = {
-                proxyPass = "http://127.0.0.1:19999";
-            };
+            # locations."/ws" = {
+            #     proxyPass = "http://127.0.0.1:5173";
+            #     proxyWebsockets = true;
+            # };
+            # locations."/dashboard/" = {
+            #     proxyPass = "http://127.0.0.1:19999";
+            # };
         };
     };
 
