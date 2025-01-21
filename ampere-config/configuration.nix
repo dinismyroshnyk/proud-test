@@ -127,7 +127,7 @@ in
     };
 
     # Firewall settings.
-    networking.firewall.allowedTCPPorts = [ 80 443 ];
+    networking.firewall.allowedTCPPorts = [ 80 443 5173 ];
 
     # Remove sudo password requirement for specified users. Currently not working.
     security.sudo.extraRules = [{
