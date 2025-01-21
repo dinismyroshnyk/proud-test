@@ -77,16 +77,17 @@ in
     # Nginx.
     services.nginx = {
         enable = true;
-        virtualHosts."netdata-proxy" = {
+        virtualHosts."web-app" = {
             forceSSL = true;
             enableACME = true; # No certificate provided. One will be generated.
             locations."/" = {
-                proxyPass = "http://127.0.0.1:8000";
-                proxyWebsockets = true;
+                proxyPass = "http://localhost:8000";
+                recommendedProxySettings = true;
             };
-            locations."/static" = {
+            locations."/static/" = {
                 proxyPass = "http://localhost:5173/static/";
                 proxyWebsockets = true;
+                recommendedProxySettings = true;
             };
             # locations."/ws" = {
             #     proxyPass = "http://127.0.0.1:5173";
