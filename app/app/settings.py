@@ -132,7 +132,7 @@ DJANGO_VITE_DEV_MODE = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_ROOT = "/staticfiles"
-STATIC_URL = "/static/"
+STATIC_URL = "static/"
 
 # DJANGO_VITE = {
 #     "default": {
