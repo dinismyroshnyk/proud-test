@@ -1,5 +1,6 @@
 import os
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from .models import *
 from .utils import *
 from .consts import *
@@ -196,7 +197,6 @@ def members(request):
             )
             return JsonResponse({"message": "Email sent successfully"}, status=OK)
 
-
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=INTERNAL_SERVER_ERROR)
     elif request.method == 'GET':
@@ -284,10 +284,8 @@ def users(request):
 
 @csrf_exempt
 def user(request, user_id):
-
     user = User.objects.get(uuid=user_id)
     if user and user.state:
-
 
         if request.method == 'GET':
 
@@ -318,6 +316,8 @@ def user(request, user_id):
             return JsonResponse(invalid_http_method(), status=METHOD_NOT_ALLOWED)
     else:
         return JsonResponse({"error": "User not found"}, status=NOT_FOUND)
+    
+
 @csrf_exempt
 def user_cancel(request, user_id):
     user = User.objects.get(uuid=user_id)
@@ -336,5 +336,29 @@ def user_cancel(request, user_id):
         return JsonResponse(invalid_http_method(), status=METHOD_NOT_ALLOWED)
 
 
+@csrf_exempt
+def requests(request):
+    if request.method == "GET":
+        requests = Request.objects.all()
+        request_list = list(requests.values())
+        return JsonResponse({'requests': request_list}, status=OK)
+            
+    elif request.method == "POST":
+        data = json.loads(request.body)
 
+        user_uuid = data['uuid']
+        user_instance = get_object_or_404(User, uuid=user_uuid)
 
+        try:
+            request = Request.objects.create(
+                state=1,
+                user=user_instance,
+                #images=data['Images']
+            )
+        except Exception as e:
+            return JsonResponse(internal_server_error_message(str(e)), status=INTERNAL_SERVER_ERROR)
+
+        return JsonResponse({'message': 'Request successfully created', 'id': request.id}, status=CREATED)
+
+    else:
+        return JsonResponse(invalid_http_method(), status=METHOD_NOT_ALLOWED)

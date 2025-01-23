@@ -2,7 +2,7 @@
 // <reference types="vite/client" />
 
 declare module '*.svelte' {
-    import type { SvelteComponent } from 'svelte';
-    const component: SvelteComponent;
+    import type { ComponentType } from 'svelte';
+    const component: ComponentType;
     export default component;
 }

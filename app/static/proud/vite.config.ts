@@ -18,13 +18,7 @@ export default defineConfig({
         emptyOutDir: true,
         outDir: resolve("../build"),
         rollupOptions: {
-            input: "./src/main.ts",
+        input: "./src/main.ts",
         },
-    },
-    server: {
-        host: '0.0.0.0',
-        port: 5173,
-        cors: true,
-        hmr: {},
     },
 })

@@ -11,7 +11,7 @@
                 📧 proud@gmail.com
             </p>
             <p>
-                <img src="static/proud/assets/instagram.png" alt="Instagram"/> @proud
+                <img src="/static/proud/assets/instagram.png" alt="Instagram"/> @proud
             </p>
         </div>
     </div>

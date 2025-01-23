@@ -3,7 +3,7 @@ name: Deploy to VPS
 on:
     push:
         branches:
-            - main # later, change to main
+            - dev # later, change to main
 
 jobs:
     deploy:
@@ -41,7 +41,7 @@ jobs:
                     key: ${{ secrets.SSH_KEY }}
                     script: |
                         cd /testing
-                        # Test testing first
+                        # Test build first
                         rm -rf .git
                         sudo nixos-rebuild build --flake .#ampere-config
                         if [ $? -eq 0 ]; then
@@ -69,7 +69,7 @@ jobs:
                         pip install -r app/requirements.txt
 
                         (
-                            cd app/static/proud &&
+                            cd app/static/testing &&
                             echo "Installing dependencies:" &&
                             npm install @types/node &&
                             npm install @rollup/plugin-alias &&
@@ -83,7 +83,7 @@ jobs:
                         )
 
                         (
-                            cd app/static/proud &&
+                            cd app/static/testing &&
                             echo "Building frontend:" &&
                             npm run build
                         )

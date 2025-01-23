@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="proud/index.html"), name="index"),
-    path("admin/", views.index, name="index"),
+    path("admin/",TemplateView.as_view(template_name="proud/index.html"), name="Admin page"),
     path("users/", views.users, name="users"),
     path("user/<uuid:user_id>/", views.user, name="user"),
     path("user/<uuid:user_id>/cancel/", views.user_cancel, name="user_cancel"),
@@ -15,4 +15,5 @@ urlpatterns = [
     path("products/", views.products, name="products"),
     path("products/<int:product_id>/", views.product, name="product"),
     path('create-newsletter/', views.create_newsletter, name='create_newsletter'),
+    path('requests/', views.requests, name="requests")
 ]

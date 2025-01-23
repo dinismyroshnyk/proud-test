@@ -3,7 +3,8 @@
 **/__pycache__/
 **/.vscode/
 **/.idea/
-**/migrations/
+**/migrations/*
+!**/migrations/__init__.py
 **/.env
 
 app/static/build

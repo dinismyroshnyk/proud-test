@@ -16,6 +16,7 @@ in
     # Allow unfree packages.
     nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
         "netdata"
+        "postman"
     ];
 
     # Bootloader.
@@ -81,7 +82,10 @@ in
             forceSSL = true;
             enableACME = true; # No certificate provided. One will be generated.
             locations."/" = {
-                proxyPass = "http://localhost:8000";
+                proxyPass = "http://127.0.0.1:8000";
+            };
+            locations."/dashboard/" = {
+                proxyPass = "http://127.0.0.1:19999";
             };
         };
     };
@@ -98,6 +102,7 @@ in
         screen
         nodePackages.npm
         pythonEnv
+        postman
     ];
 
     # Enabled programs.

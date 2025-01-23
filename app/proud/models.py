@@ -63,6 +63,12 @@ class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
 
+class Image(models.Model):
+    id = models.AutoField(primary_key=True)
+    path = models.TextField(null=False)
+    image = models.ImageField(upload_to='images/')
+
+
 class Product(models.Model):
 
     PRODUCT_TYPES = [
@@ -87,14 +93,23 @@ class Product(models.Model):
     description = models.TextField(null=False)
     exclusivity = models.BooleanField(null=False, default=False)
     size = models.IntegerField(choices=PRODUCT_SIZES, null=False)
-
-
-class Image(models.Model):
-    id = models.AutoField(primary_key=True)
-    path = models.TextField(null=False)
-    image = models.ImageField(upload_to='images/')
+    images = models.ForeignKey(Image, on_delete=models.SET_NULL, null=True)
 
 
 class Cart(models.Model):
     id = models.AutoField(primary_key=True)
     product_array = models.ManyToManyField(Product)
+
+
+class Request(models.Model):
+
+    REQUEST_TYPES = [
+        (1, 'PENDING'),
+        (2, 'ACCEPTED'),
+        (3, 'REJECTED'),
+    ]
+
+    id = models.AutoField(primary_key=True)
+    state = models.IntegerField(choices=REQUEST_TYPES, null=False)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    images = models.ForeignKey(Image, on_delete=models.SET_NULL, null=True)
