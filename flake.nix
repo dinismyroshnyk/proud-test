@@ -8,7 +8,7 @@
         sops-nix.url = "github:Mic92/sops-nix";
     };
 
-    outputs = { self, nixpkgs, disko, ...}: {
+    outputs = { self, nixpkgs, disko, sops-nix, ...}: {
         nixosConfigurations = {
             ampere-install = nixpkgs.lib.nixosSystem {
                 system = "aarch64-linux";
