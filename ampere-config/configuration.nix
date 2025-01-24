@@ -171,6 +171,7 @@ in
 
     # System packages.
     environment.systemPackages = with pkgs; [
+        apacheHttpd
         nodePackages.npm
         pythonEnv
     ];
