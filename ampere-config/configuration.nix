@@ -25,8 +25,8 @@ in
             "django-env/db-user" = {};
         };
         templates."django-env".content = ''
-            DB_NAME=${config.sops.placeholder."django-env/db-name"}
-            DB_USER=${config.sops.placeholder."django-env/db-user"}
+            DB_NAME=$(cat ${config.sops.secrets."django-env/db-name".path})
+            DB_USER=$(cat ${config.sops.secrets."django-env/db-user".path})
             DB_HOST=localhost
             DB_PORT=5432
         '';

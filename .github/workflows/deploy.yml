@@ -42,10 +42,10 @@ jobs:
                     script: |
                         cd /testing
                         rm -rf .git
-                        sudo nixos-rebuild build --flake .#ampere-config --impure
+                        sudo nixos-rebuild build --flake .#ampere-config
                         if [ $? -eq 0 ]; then
                             echo "Build successful! Applying configuration..."
-                            sudo nixos-rebuild switch --flake .#ampere-config --impure
+                            sudo nixos-rebuild switch --flake .#ampere-config
                         else
                             echo "Build failed! Exiting..."
                             exit 1
