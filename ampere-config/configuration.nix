@@ -11,7 +11,6 @@ in
     # Allow unfree packages.
     nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
         "netdata"
-        "postman"
     ];
 
     # Bootloader.
@@ -91,7 +90,8 @@ in
                 -newkey rsa:2048 \
                 -keyout /etc/ssl/private/nginx-selfsigned.key \
                 -out /etc/ssl/certs/nginx-selfsigned.crt \
-                -subj "/CN=130.61.74.203"
+                -subj "/CN=130.61.74.203" \
+                -addext "subjectAltName = IP:130.61.74.203"
 
             # Set proper permissions for Nginx
             chmod 640 /etc/ssl/private/nginx-selfsigned.key
