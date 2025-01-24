@@ -56,7 +56,20 @@ in
                 proxyPass = "http://127.0.0.1:8000";
             };
             locations."/dashboard/" = {
-                proxyPass = "http://127.0.0.1:19999";
+                proxyPass = "http://127.0.0.1:19999/";
+                proxyWebsockets = true;
+                extraConfig = ''
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+
+                    rewrite ^/dashboard/?(.*)$ /$1 break;
+                    sub_filter_once off;
+                    sub_filter 'href="/' 'href="/dashboard/';
+                    sub_filter 'src="/' 'src="/dashboard/';
+                    sub_filter 'action="/' 'action="/dashboard/';
+                '';
             };
         };
     };
