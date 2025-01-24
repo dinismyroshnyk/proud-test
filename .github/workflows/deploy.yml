@@ -60,40 +60,25 @@ jobs:
                     script: |
                         cd /testing
 
-                        export PYTHONPATH=$PYTHONPATH:$(pwd)
-
-                        python3 -m venv app/projectenv
-                        source app/projectenv/bin/activate
-
-                        pip install -r app/requirements.txt
-
+                        # Install Python dependencies
                         (
-                            cd app/static/proud &&
-                            echo "Installing dependencies:" &&
-                            npm install @types/node &&
-                            npm install @rollup/plugin-alias &&
-                            npm install @sveltejs/vite-plugin-svelte &&
-                            npm install @tsconfig/svelte &&
-                            npm install svelte &&
-                            npm install svelte-check &&
-                            npm install tslib &&
-                            npm install typescript &&
-                            npm install vite
+                            cd app &&
+                            python3 -m venv projectenv &&
+                            source projectenv/bin/activate &&
+                            pip install -r requirements.txt &&
+                            deactivate
                         )
 
+                        # Build frontend
                         (
                             cd app/static/proud &&
-                            echo "Building frontend:" &&
+                            npm ci &&
                             npm run build
                         )
 
-                        (
-                            cd app/ &&
-                            echo "Collecting static files:" &&
-                            python manage.py collectstatic
-                        )
-
+                        # Apply NixOS config
                         sudo nixos-rebuild switch --flake .#ampere-config
 
+                        # Restart services
                         sudo systemctl restart django-app nginx postgresql
                     timeout: 300s

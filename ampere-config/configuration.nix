@@ -111,8 +111,8 @@ in
             Type = "simple";
             User = "root";
             WorkingDirectory = "/testing/app";
-            ExecStartPre = "${pkgs.python3}/bin/python manage.py makemigrations --noinput && ${pkgs.python3}/bin/python manage.py migrate --noinput";
-            ExecStart = "${pkgs.python3}/bin/python manage.py runserver";
+            ExecStartPre = "${pkgs.bash}/bin/bash -c 'source projectenv/bin/activate && python manage.py makemigrations --noinput && python manage.py migrate --noinput'";
+            ExecStart = "${pkgs.bash}/bin/bash -c 'source projectenv/bin/activate && python manage.py runserver'";
             Restart = "always";
             RestartSec = "30s";
             EnvironmentFile = "/etc/django-environment";
