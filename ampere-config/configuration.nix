@@ -155,7 +155,7 @@ in
             ExecStart = "${pkgs.bash}/bin/bash -c 'source projectenv/bin/activate && python manage.py runserver'";
             Restart = "always";
             RestartSec = "30s";
-            EnvironmentFile = config.sops.secrets."django-env".path;
+            EnvironmentFile = config.sops.templates."django-env".path;
         };
 
         environment = {
