@@ -24,7 +24,7 @@ in
             "django-env/db-name" = {};
             "django-env/db-user" = {};
         };
-        templates."django-env".contents = ''
+        templates."django-env".content = ''
             DB_NAME=${config.sops.placeholder."django-env/db-name"}
             DB_USER=${config.sops.placeholder."django-env/db-user"}
             DB_HOST=localhost
