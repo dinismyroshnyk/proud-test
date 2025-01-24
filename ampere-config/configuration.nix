@@ -161,8 +161,8 @@ in
     # Create environment file for secrets
     environment.etc."django-environment" = {
         text = ''
-            DB_NAME=${config.sops.secrets."django-env/db-name".path}
-            DB_USER=${config.sops.secrets."django-env/db-user".path}
+            DB_NAME=${config.sops.secrets."django-env/db-name"}
+            DB_USER=${config.sops.secrets."django-env/db-user"}
             DB_HOST=localhost
             DB_PORT=5432
         '';
@@ -194,10 +194,10 @@ in
         root.openssh.authorizedKeys.keys = [
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBuRiGrNd5DLnjN3EbqV2wRvlnOh9iMmIOTsLfMvQRE dinis@omen-15"
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEnG5aUk9bdYx51nnDCy4JE9HQ5doRIHLAXJZKXD2oKB dinismyroshnyk2@protonmail.com"
-            "${config.sops.secrets."ssh-keys/dinis-nix".path}"
-            "${config.sops.secrets."ssh-keys/dinis-win".path}"
-            "${config.sops.secrets."ssh-keys/mariana".path}"
-            "${config.sops.secrets."ssh-keys/deploy".path}"
+            "${config.sops.secrets."ssh-keys/dinis-nix"}"
+            "${config.sops.secrets."ssh-keys/dinis-win"}"
+            "${config.sops.secrets."ssh-keys/mariana"}"
+            "${config.sops.secrets."ssh-keys/deploy"}"
         ];
     };
 
