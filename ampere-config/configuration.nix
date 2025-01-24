@@ -1,10 +1,5 @@
 { modulesPath, lib, pkgs, ... }:
 let
-    NETDATA_USERNAME= "netdata";                    # Username for Netdata
-    NETDATA_PASSWORD= "netdata_password";           # Password for Netdata
-    # DOMAIN_NAME = "your_domain_name.com";         # Domain Name (Uncomment when available)
-    EMAIL_ADDRESS = "your_email@example.com";       # Email for ACME
-
     pythonEnv = pkgs.python3.withPackages (ps: with ps; [ pip ]);
 in
 {
@@ -48,39 +43,14 @@ in
         };
     };
 
-    users = {
-        users.netdata-htpasswd-user = {
-            isSystemUser = true;
-            createHome = false;
-            group = "netdata-htpasswd-user";
-        };
-        groups.netdata-htpasswd-user = {};
-    };
-
-    systemd = {
-        tmpfiles.rules = [
-            "d /var/lib/netdata 0755 netdata-htpasswd-user netdata-htpasswd-user -"
-        ];
-        services.generate-htpasswd = {
-            description = "Generate htpasswd file";
-            wantedBy = [ "multi-user.target" ];
-            serviceConfig = {
-                Type = "oneshot";
-                User = "netdata-htpasswd-user";
-                RemainAfterExit = true;
-                ExecStart = ''
-                    ${pkgs.apacheHttpd}/bin/htpasswd -c -b /var/lib/netdata/htpasswd ${NETDATA_USERNAME} ${NETDATA_PASSWORD}
-                '';
-            };
-        };
-    };
-
     # Nginx.
     services.nginx = {
         enable = true;
-        virtualHosts."web-app" = {
-            forceSSL = true;
-            enableACME = true; # No certificate provided. One will be generated.
+        virtualHosts."130.61.74.203" = {
+            addSSL = true;
+            enableACME = false;
+            sslCertificate = "/etc/ssl/certs/nginx-selfsigned.crt";
+            sslCertificateKey = "/etc/ssl/private/nginx-selfsigned.key";
             locations."/" = {
                 proxyPass = "http://127.0.0.1:8000";
             };
@@ -90,19 +60,26 @@ in
         };
     };
 
-    # ACME Configuration (No certificate provided. One will be generated.)
-    security.acme = {
-        acceptTerms = true;
-        defaults.email = EMAIL_ADDRESS;
+    # Generate SSL certificates.
+    systemd.services.generate-ssl-certs = {
+        wantedBy = [ "nginx.service" ];
+        before = [ "nginx.service" ];
+        serviceConfig.Type = "oneshot";
+        script = ''
+            mkdir -p /etc/ssl/{certs,private}
+            ${pkgs.openssl}/bin/openssl req -x509 -nodes -days 365 \
+                -newkey rsa:2048 \
+                -keyout /etc/ssl/private/nginx-selfsigned.key \
+                -out /etc/ssl/certs/nginx-selfsigned.crt \
+                -subj "/CN=130.61.74.203"
+        '';
     };
 
     # System packages.
     environment.systemPackages = with pkgs; [
-        apacheHttpd
         screen
         nodePackages.npm
         pythonEnv
-        postman
     ];
 
     # Enabled programs.
