@@ -24,12 +24,22 @@ in
             "django-env/db-name" = {};
             "django-env/db-user" = {};
         };
-        templates."django-env".content = ''
-            DB_NAME=$(cat ${config.sops.secrets."django-env/db-name".path})
-            DB_USER=$(cat ${config.sops.secrets."django-env/db-user".path})
-            DB_HOST=localhost
-            DB_PORT=5432
-        '';
+        templates = {
+            "django-env".content = ''
+                DB_NAME=$(cat ${config.sops.secrets."django-env/db-name".path})
+                DB_USER=$(cat ${config.sops.secrets."django-env/db-user".path})
+                DB_HOST=localhost
+                DB_PORT=5432
+            '';
+            "authorized-keys".content = ''
+                ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBuRiGrNd5DLnjN3EbqV2wRvlnOh9iMmIOTsLfMvQRE dinis@omen-15
+                ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEnG5aUk9bdYx51nnDCy4JE9HQ5doRIHLAXJZKXD2oKB
+                $(cat ${config.sops.secrets."ssh-keys/dinis-nix".path})
+                $(cat ${config.sops.secrets."ssh-keys/dinis-win".path})
+                $(cat ${config.sops.secrets."ssh-keys/mariana".path})
+                $(cat ${config.sops.secrets."ssh-keys/deploy".path})
+            '';
+        };
     };
 
     # Allow unfree packages.
@@ -186,16 +196,13 @@ in
 
     # Roor user keys.
     users.users = {
-        root.openssh.authorizedKeys.keyFiles = [
-            "${config.sops.secrets."ssh-keys/dinis-nix".path}"
-            "${config.sops.secrets."ssh-keys/dinis-win".path}"
-            "${config.sops.secrets."ssh-keys/mariana".path}"
-            "${config.sops.secrets."ssh-keys/deploy".path}"
-        ];
-        root.openssh.authorizedKeys.keys = [
-            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBuRiGrNd5DLnjN3EbqV2wRvlnOh9iMmIOTsLfMvQRE dinis@omen-15"
-            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEnG5aUk9bdYx51nnDCy4JE9HQ5doRIHLAXJZKXD2oKB dinismyroshnyk2@protonmail.com"
-        ];
+        # root.openssh.authorizedKeys.keyFiles = [
+        #     "${config.sops.secrets."ssh-keys/dinis-nix".path}"
+        #     "${config.sops.secrets."ssh-keys/dinis-win".path}"
+        #     "${config.sops.secrets."ssh-keys/mariana".path}"
+        #     "${config.sops.secrets."ssh-keys/deploy".path}"
+        # ];
+        root.openssh.authorizedKeys.keys = lib.splitString "\n" (builtins.readFile config.sops.templates."authorized-keys".path);
     };
 
     # Enable PostgreSQL.
