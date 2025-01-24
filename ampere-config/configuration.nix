@@ -1,4 +1,4 @@
-{ modulesPath, lib, pkgs, ... }:
+{ modulesPath, lib, pkgs, config, ... }:
 let
     pythonEnv = pkgs.python3.withPackages (ps: with ps; [ pip ]);
 in
