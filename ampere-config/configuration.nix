@@ -13,6 +13,17 @@ in
         defaultSopsFile = "./secrets/secrets.yaml";
         defaultSopsFormat = "yaml";
         age.keyFile = "/var/lib/sops-nix/key.txt";
+        secrets = {
+            # SSH Keys
+            "ssh-keys/dinis-nix" = {};
+            "ssh-keys/dinis-win" = {};
+            "ssh-keys/mariana" = {};
+            "ssh-keys/deploy" = {};
+
+            # Django Secrets
+            "django-env/db-name" = {};
+            "django-env/db-user" = {};
+        };
     };
 
     # Allow unfree packages.
@@ -182,10 +193,10 @@ in
         root.openssh.authorizedKeys.keys = [
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBuRiGrNd5DLnjN3EbqV2wRvlnOh9iMmIOTsLfMvQRE dinis@omen-15"
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEnG5aUk9bdYx51nnDCy4JE9HQ5doRIHLAXJZKXD2oKB dinismyroshnyk2@protonmail.com"
-            "${config.sops.secrets."ssh-keys/dinis-nix".path}"
-            "${config.sops.secrets."ssh-keys/dinis-win".path}"
-            "${config.sops.secrets."ssh-keys/mariana".path}"
-            "${config.sops.secrets."ssh-keys/deploy".path}"
+            ${config.sops.secrets."ssh-keys/dinis-nix".path}
+            ${config.sops.secrets."ssh-keys/dinis-win".path}
+            ${config.sops.secrets."ssh-keys/mariana".path}
+            ${config.sops.secrets."ssh-keys/deploy".path}
         ];
     };
 
