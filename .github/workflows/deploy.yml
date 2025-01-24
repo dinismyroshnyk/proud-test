@@ -33,7 +33,7 @@ jobs:
                     target: "/testing"
                     timeout: 60s
 
-            -   name: "Validate and apply NixOS configuration"
+            -   name: "Validate NixOS configuration"
                 uses: appleboy/ssh-action@v1.2.0
                 with:
                     host: ${{ secrets.SSH_HOST }}
@@ -41,18 +41,17 @@ jobs:
                     key: ${{ secrets.SSH_KEY }}
                     script: |
                         cd /testing
-                        # Test build first
                         rm -rf .git
                         sudo nixos-rebuild build --flake .#ampere-config
                         if [ $? -eq 0 ]; then
-                            sudo nixos-rebuild switch --flake .#ampere-config || true
+                            echo "Build successful! Proceeding..."
                         else
-                            echo "Build failed! Not applying changes."
+                            echo "Build failed! Exiting..."
                             exit 1
                         fi
                     timeout: 300s
 
-            -   name: "Run server"
+            -   name: "Apply NixOS configuration and restart services"
                 uses: appleboy/ssh-action@v1.2.0
                 with:
                     host: ${{ secrets.SSH_HOST }}
@@ -94,6 +93,7 @@ jobs:
                             python manage.py collectstatic
                         )
 
-                        screen -ls | grep -E "^\s*[0-9]+\." | awk '{print $1}' | xargs -I{} screen -X -S {}
+                        sudo nixos-rebuild switch --flake .#ampere-config
 
-                        screen -dmS django bash -c "cd /testing/app && python manage.py makemigrations && python manage.py migrate && python manage.py runserver"
+                        sudo systemctl restart django-app nginx postgresql
+                    timeout: 300s

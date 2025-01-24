@@ -62,12 +62,13 @@ in
     };
 
     # Create Nginx user and group.
-    users.users.nginx = {
-        isSystemUser = true;
-        group = "nginx";
+    users = {
+        users.nginx = {
+            isSystemUser = true;
+            group = "nginx";
+        };
+        groups.nginx = {};
     };
-
-    users.groups.nginx = {};
 
     # Generate SSL certificates.
     systemd.services.generate-ssl-certs = {
@@ -99,6 +100,41 @@ in
         '';
     };
 
+    # Add systemd service for Django
+    systemd.services.django-app = {
+        enable = true;
+        description = "Django Application Service";
+        after = [ "network.target" "postgresql.service" "nginx.service" ];
+        wants = [ "postgresql.service" "nginx.service" ];
+
+        serviceConfig = {
+            Type = "simple";
+            User = "root";
+            WorkingDirectory = "/testing/app";
+            ExecStartPre = "${pkgs.python3}/bin/python manage.py makemigrations --noinput && ${pkgs.python3}/bin/python manage.py migrate --noinput";
+            ExecStart = "${pkgs.python3}/bin/python manage.py runserver";
+            Restart = "always";
+            RestartSec = "30s";
+            EnvironmentFile = "/etc/django-environment";
+        };
+
+        environment = {
+            PYTHONPATH = "/testing/app";
+            DJANGO_SETTINGS_MODULE = "app.settings";
+        };
+    };
+
+    # Create environment file for secrets
+    environment.etc."django-environment" = {
+        text = ''
+            DB_NAME=proud_db
+            DB_USER=root
+            DB_HOST=localhost
+            DB_PORT=5432
+        '';
+        mode = "0600";
+    };
+
     # System packages.
     environment.systemPackages = with pkgs; [
         screen
@@ -119,38 +155,14 @@ in
     # Firewall settings.
     networking.firewall.allowedTCPPorts = [ 80 443 ];
 
-    # Remove sudo password requirement for specified users. Currently not working.
-    security.sudo.extraRules = [{
-        users = [ "dinis" "ricol" "mariana" ];
-        commands =  [ { command = "/home/root/secret.sh"; options = [ "SETENV" "NOPASSWD" ]; } ];
-    }];
-
-    # Users.
+    # Roor user keys.
     users.users = {
-        root.openssh.authorizedKeys.keys = [ # Remove later.
+        root.openssh.authorizedKeys.keys = [
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBuRiGrNd5DLnjN3EbqV2wRvlnOh9iMmIOTsLfMvQRE dinis@omen-15"
+            "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBMdCQ8vgC3QBlUu3rI65VzTiomxsprsIv5hHU7oiLoeKBFtG4IlgkgIYyV2mayMbIjQ7bx/t1MfHHx+8+y+WrYI= dinis myroshnyk@WIN-7TB4RCE36HU"
+            "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBNRWrtr+9OZyz1yt8sRDWyXW949CPhk5ejkqYofnGcJWApPEFkTJY2NK7YvG7nVMJhcK63OUNKGolajl9zyPcM4= mariana@LAPTOP-HS584L9C"
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEnG5aUk9bdYx51nnDCy4JE9HQ5doRIHLAXJZKXD2oKB dinismyroshnyk2@protonmail.com"
         ];
-        dinis = {
-            isNormalUser = true;
-            extraGroups = [ "wheel" ];
-            openssh.authorizedKeys.keys = [
-                "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBuRiGrNd5DLnjN3EbqV2wRvlnOh9iMmIOTsLfMvQRE dinis@omen-15"
-                "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBMdCQ8vgC3QBlUu3rI65VzTiomxsprsIv5hHU7oiLoeKBFtG4IlgkgIYyV2mayMbIjQ7bx/t1MfHHx+8+y+WrYI= dinis myroshnyk@WIN-7TB4RCE36HU"
-            ];
-        };
-        ricol = {
-            isNormalUser = true;
-            extraGroups = [ "wheel" ];
-            openssh.authorizedKeys.keys = [];
-        };
-        mariana = {
-            isNormalUser = true;
-            extraGroups = [ "wheel" ];
-            openssh.authorizedKeys.keys = [
-                "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBNRWrtr+9OZyz1yt8sRDWyXW949CPhk5ejkqYofnGcJWApPEFkTJY2NK7YvG7nVMJhcK63OUNKGolajl9zyPcM4= mariana@LAPTOP-HS584L9C"
-            ];
-        };
     };
 
     # Enable PostgreSQL.
