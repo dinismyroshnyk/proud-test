@@ -137,7 +137,6 @@ in
 
     # System packages.
     environment.systemPackages = with pkgs; [
-        screen
         nodePackages.npm
         pythonEnv
     ];

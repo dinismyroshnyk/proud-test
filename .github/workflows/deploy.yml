@@ -76,6 +76,14 @@ jobs:
                             npm run build
                         )
 
+                        # Collect static files
+                        (
+                            cd app &&
+                            source projectenv/bin/activate &&
+                            python manage.py collectstatic
+                            deactivate
+                        )
+
                         # Apply NixOS config
                         sudo nixos-rebuild switch --flake .#ampere-config
 
