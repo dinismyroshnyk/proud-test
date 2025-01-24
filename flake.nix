@@ -5,6 +5,7 @@
             url = "github:nix-community/disko";
             inputs.nixpkgs.follows = "nixpkgs";
         };
+        sops-nix.url = "github:Mic92/sops-nix";
     };
 
     outputs = { self, nixpkgs, disko, ...}: {
@@ -21,6 +22,7 @@
                 system = "aarch64-linux";
                 modules = [
                     disko.nixosModules.disko
+                    sops-nix.nixosModules.sops
                     ./ampere-config/configuration.nix
                     ./ampere-config/hardware-configuration.nix
                 ];

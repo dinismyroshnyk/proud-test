@@ -10,11 +10,13 @@ pkgs.mkShell {
         tree
         postgresql
         firefox
+        sops
         nodePackages.npm
     ];
 
     shellHook = ''
         export PYTHONPATH=$PYTHONPATH:$(pwd)
+        export EDITOR=nvim
 
         python3 -m venv app/projectenv
         source app/projectenv/bin/activate

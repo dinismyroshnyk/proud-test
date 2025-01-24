@@ -51,6 +51,19 @@ jobs:
                         fi
                     timeout: 300s
 
+            -   name: "Generate htpasswd file and give access to Nginx"
+                uses: appleboy/ssh-action@v1.2.0
+                with:
+                    host: ${{ secrets.SSH_HOST }}
+                    username: ${{ secrets.SSH_USERNAME }}
+                    key: ${{ secrets.SSH_KEY }}
+                    script: |
+                        cd /var/lib/netdata
+                        sudo htpasswd -c -b htpasswd ${{ secrets.NETDATA_USERNAME }} ${{ secrets.NETDATA_PASSWORD }}
+                        sudo chmod 640 htpasswd
+                        sudo chown root:nginx htpasswd
+                    timeout: 60s
+
             -   name: "Apply NixOS configuration and restart services"
                 uses: appleboy/ssh-action@v1.2.0
                 with:

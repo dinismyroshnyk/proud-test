@@ -8,6 +8,13 @@ in
         ../disk-config.nix
     ];
 
+    # Sops configuration.
+    sops = {
+        defaultSopsFile = "./secrets/secrets.yaml";
+        defaultSopsFormat = "yaml";
+        age.keyFile = "/var/lib/sops-nix/key.txt";
+    };
+
     # Allow unfree packages.
     nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
         "netdata"
@@ -59,6 +66,9 @@ in
                 proxyPass = "http://127.0.0.1:19999/";
                 proxyWebsockets = true;
                 extraConfig = ''
+                    auth_basic "Netdata Dashboard";
+                    auth_basic_user_file /var/lib/netdata/htpasswd;
+
                     proxy_set_header Host $host;
                     proxy_set_header X-Real-IP $remote_addr;
                     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -140,8 +150,8 @@ in
     # Create environment file for secrets
     environment.etc."django-environment" = {
         text = ''
-            DB_NAME=proud_db
-            DB_USER=root
+            DB_NAME=${config.sops.secrets."django-env/db-name".path}
+            DB_USER=${config.sops.secrets."django-env/db-user".path}
             DB_HOST=localhost
             DB_PORT=5432
         '';
@@ -171,9 +181,11 @@ in
     users.users = {
         root.openssh.authorizedKeys.keys = [
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBuRiGrNd5DLnjN3EbqV2wRvlnOh9iMmIOTsLfMvQRE dinis@omen-15"
-            "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBMdCQ8vgC3QBlUu3rI65VzTiomxsprsIv5hHU7oiLoeKBFtG4IlgkgIYyV2mayMbIjQ7bx/t1MfHHx+8+y+WrYI= dinis myroshnyk@WIN-7TB4RCE36HU"
-            "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBNRWrtr+9OZyz1yt8sRDWyXW949CPhk5ejkqYofnGcJWApPEFkTJY2NK7YvG7nVMJhcK63OUNKGolajl9zyPcM4= mariana@LAPTOP-HS584L9C"
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEnG5aUk9bdYx51nnDCy4JE9HQ5doRIHLAXJZKXD2oKB dinismyroshnyk2@protonmail.com"
+            "${config.sops.secrets."ssh-keys/dinis-nix".path}"
+            "${config.sops.secrets."ssh-keys/dinis-win".path}"
+            "${config.sops.secrets."ssh-keys/mariana".path}"
+            "${config.sops.secrets."ssh-keys/deploy".path}"
         ];
     };
 
