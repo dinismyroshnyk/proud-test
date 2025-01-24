@@ -1,6 +1,6 @@
 { modulesPath, lib, pkgs, config, ... }:
 let
-    db_name = config.sops.secrets."django-env/db-name".content;
+    db_name = $(cat "${config.sops.secrets."django-env/db-name".path}");
     pythonEnv = pkgs.python3.withPackages (ps: with ps; [ pip ]);
 in
 {
