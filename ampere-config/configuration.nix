@@ -1,6 +1,5 @@
 { modulesPath, lib, pkgs, config, ... }:
 let
-    db_name = $(cat "${config.sops.secrets."django-env/db-name".path}");
     pythonEnv = pkgs.python3.withPackages (ps: with ps; [ pip ]);
 in
 {
@@ -25,6 +24,12 @@ in
             "django-env/db-name" = {};
             "django-env/db-user" = {};
         };
+        templates."django-env".contents = ''
+            DB_NAME=${config.sops.placeholder."django-env/db-name"}
+            DB_USER=${config.sops.placeholder."django-env/db-user"}
+            DB_HOST=localhost
+            DB_PORT=5432
+        '';
     };
 
     # Allow unfree packages.
@@ -150,24 +155,13 @@ in
             ExecStart = "${pkgs.bash}/bin/bash -c 'source projectenv/bin/activate && python manage.py runserver'";
             Restart = "always";
             RestartSec = "30s";
-            EnvironmentFile = "/etc/django-environment";
+            EnvironmentFile = config.sops.secrets."django-env".path;
         };
 
         environment = {
             PYTHONPATH = "/testing/app";
             DJANGO_SETTINGS_MODULE = "app.settings";
         };
-    };
-
-    # Create environment file for secrets
-    environment.etc."django-environment" = {
-        text = ''
-            DB_NAME=${db_name}
-            DB_USER=$(cat "${config.sops.secrets."django-env/db-user".path}")
-            DB_HOST=localhost
-            DB_PORT=5432
-        '';
-        mode = "0600";
     };
 
     # System packages.
@@ -192,13 +186,15 @@ in
 
     # Roor user keys.
     users.users = {
-        root.openssh.authorizedKeys.keys = [
-            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBuRiGrNd5DLnjN3EbqV2wRvlnOh9iMmIOTsLfMvQRE dinis@omen-15"
-            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEnG5aUk9bdYx51nnDCy4JE9HQ5doRIHLAXJZKXD2oKB dinismyroshnyk2@protonmail.com"
+        root.openssh.authorizedKeys.keyFiles = [
             "${config.sops.secrets."ssh-keys/dinis-nix".path}"
             "${config.sops.secrets."ssh-keys/dinis-win".path}"
             "${config.sops.secrets."ssh-keys/mariana".path}"
             "${config.sops.secrets."ssh-keys/deploy".path}"
+        ];
+        root.openssh.authorizedKeys.keys = [
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBuRiGrNd5DLnjN3EbqV2wRvlnOh9iMmIOTsLfMvQRE dinis@omen-15"
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEnG5aUk9bdYx51nnDCy4JE9HQ5doRIHLAXJZKXD2oKB dinismyroshnyk2@protonmail.com"
         ];
     };
 
