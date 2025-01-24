@@ -1,5 +1,6 @@
 { modulesPath, lib, pkgs, config, ... }:
 let
+    db_name = config.sops.secrets."django-env/db-name".content;
     pythonEnv = pkgs.python3.withPackages (ps: with ps; [ pip ]);
 in
 {
@@ -161,7 +162,7 @@ in
     # Create environment file for secrets
     environment.etc."django-environment" = {
         text = ''
-            DB_NAME=$(cat "${config.sops.secrets."django-env/db-name".path}")
+            DB_NAME=${db_name}
             DB_USER=$(cat "${config.sops.secrets."django-env/db-user".path}")
             DB_HOST=localhost
             DB_PORT=5432
