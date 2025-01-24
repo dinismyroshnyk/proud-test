@@ -46,6 +46,8 @@ in
     # Nginx.
     services.nginx = {
         enable = true;
+        user = "nginx";
+        group = "nginx";
         virtualHosts."130.61.74.203" = {
             addSSL = true;
             enableACME = false;
@@ -60,18 +62,40 @@ in
         };
     };
 
+    # Create Nginx user and group.
+    users.users.nginx = {
+        isSystemUser = true;
+        group = "nginx";
+    };
+
+    users.groups.nginx = {};
+
     # Generate SSL certificates.
     systemd.services.generate-ssl-certs = {
         wantedBy = [ "nginx.service" ];
         before = [ "nginx.service" ];
-        serviceConfig.Type = "oneshot";
+        serviceConfig = {
+            Type = "oneshot";
+            User = "root";
+            Group = "root";
+        };
         script = ''
-            mkdir -p /etc/ssl/{certs,private}
+            # Create directories with proper permissions
+            mkdir -p /etc/ssl/certs /etc/ssl/private
+            chmod 755 /etc/ssl/certs
+            chmod 710 /etc/ssl/private
+            chown root:nginx /etc/ssl/private
+
+            # Generate certificates
             ${pkgs.openssl}/bin/openssl req -x509 -nodes -days 365 \
                 -newkey rsa:2048 \
                 -keyout /etc/ssl/private/nginx-selfsigned.key \
                 -out /etc/ssl/certs/nginx-selfsigned.crt \
                 -subj "/CN=130.61.74.203"
+
+            # Set proper permissions for Nginx
+            chmod 640 /etc/ssl/private/nginx-selfsigned.key
+            chown root:nginx /etc/ssl/private/nginx-selfsigned.key
         '';
     };
 
