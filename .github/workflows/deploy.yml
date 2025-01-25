@@ -33,7 +33,7 @@ jobs:
                     target: "/testing"
                     timeout: 60s
 
-            -   name: "Validate and apply NixOS configuration"
+            -   name: "Validate NixOS configuration"
                 uses: appleboy/ssh-action@v1.2.0
                 with:
                     host: ${{ secrets.SSH_HOST }}
@@ -44,8 +44,7 @@ jobs:
                         rm -rf .git
                         sudo nixos-rebuild build --flake .#ampere-config
                         if [ $? -eq 0 ]; then
-                            echo "Build successful! Applying configuration..."
-                            sudo nixos-rebuild switch --flake .#ampere-config
+                            echo "Build successful! Proceeding..."
                         else
                             echo "Build failed! Exiting..."
                             exit 1
@@ -60,13 +59,14 @@ jobs:
                     key: ${{ secrets.SSH_KEY }}
                     script: |
                         cd /var/lib/netdata
-                        rm htpasswd
-                        sudo htpasswd -c -b htpasswd ${{ secrets.NETDATA_USERNAME }} ${{ secrets.NETDATA_PASSWORD }}
-                        sudo chmod 640 htpasswd
-                        sudo chown root:nginx htpasswd
+                        if [ ! -f htpasswd ]; then
+                            sudo htpasswd -c -b htpasswd ${{ secrets.NETDATA_USERNAME }} ${{ secrets.NETDATA_PASSWORD }}
+                            sudo chmod 640 htpasswd
+                            sudo chown root:nginx htpasswd
+                        fi
                     timeout: 60s
 
-            -   name: "Update Django app and restart services"
+            -   name: "Apply NixOS configuration, update Django app and restart services"
                 uses: appleboy/ssh-action@v1.2.0
                 with:
                     host: ${{ secrets.SSH_HOST }}
@@ -98,6 +98,9 @@ jobs:
                             python manage.py collectstatic
                             deactivate
                         )
+
+                        # Apply NixOS config
+                        sudo nixos-rebuild switch --flake .#ampere-config
 
                         # Restart services
                         sudo systemctl restart django-app nginx postgresql
