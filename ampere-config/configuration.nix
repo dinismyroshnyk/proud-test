@@ -14,13 +14,6 @@ in
         defaultSopsFormat = "yaml";
         age.keyFile = "/var/lib/sops-nix/key.txt";
         secrets = {
-            # SSH Keys
-            "ssh-keys/dinis-nix" = {};
-            "ssh-keys/dinis-win" = {};
-            "ssh-keys/mariana" = {};
-            "ssh-keys/deploy" = {};
-
-            # Django Secrets
             "django-env/db-name" = {};
             "django-env/db-user" = {};
         };
@@ -198,26 +191,12 @@ in
 
     # Root user keys.
     users.users = {
-        root.openssh.authorizedKeys.keyFiles = [ "/root/.ssh/just_in_case.pub" ];
-        root.openssh.authorizedKeys.keys = lib.splitString "\n" (builtins.readFile "/root/.ssh/authorized_keys");
-    };
-
-    # Generate authorized_keys file.
-    systemd.services.generate-authorized-keys = {
-        wantedBy = [ "sshd.service" ];
-        before = [ "sshd.service" ];
-        serviceConfig = {
-            Type = "oneshot";
-            User = "root";
-            Group = "root";
-        };
-        script = ''
-            rm /root/.ssh/authorized_keys
-            echo $(cat ${config.sops.secrets."ssh-keys/dinis-nix".path}) >> /root/.ssh/authorized_keys
-            echo $(cat ${config.sops.secrets."ssh-keys/dinis-win".path}) >> /root/.ssh/authorized_keys
-            echo $(cat ${config.sops.secrets."ssh-keys/mariana".path}) >> /root/.ssh/authorized_keys
-            echo $(cat ${config.sops.secrets."ssh-keys/deploy".path}) >> /root/.ssh/authorized_keys
-        '';
+        root.openssh.authorizedKeys.keys = [
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBuRiGrNd5DLnjN3EbqV2wRvlnOh9iMmIOTsLfMvQRE dinis@omen-15"
+            "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBMdCQ8vgC3QBlUu3rI65VzTiomxsprsIv5hHU7oiLoeKBFtG4IlgkgIYyV2mayMbIjQ7bx/t1MfHHx+8+y+WrYI= dinis myroshnyk@WIN-7TB4RCE36HU"
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEnG5aUk9bdYx51nnDCy4JE9HQ5doRIHLAXJZKXD2oKB dinismyroshnyk2@protonmail.com"
+            "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBNRWrtr+9OZyz1yt8sRDWyXW949CPhk5ejkqYofnGcJWApPEFkTJY2NK7YvG7nVMJhcK63OUNKGolajl9zyPcM4= mariana@LAPTOP-HS584L9C"
+        ];
     };
 
     # Enable PostgreSQL.
