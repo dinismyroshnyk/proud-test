@@ -198,10 +198,7 @@ in
 
     # Root user keys.
     users.users = {
-        root.openssh.authorizedKeys.keys = [
-            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBuRiGrNd5DLnjN3EbqV2wRvlnOh9iMmIOTsLfMvQRE dinis@omen-15"
-            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEnG5aUk9bdYx51nnDCy4JE9HQ5doRIHLAXJZKXD2oKB dinismyroshnyk2@protonmail.com"
-        ];
+        root.openssh.authorizedKeys.keyFiles = [ "/root/.ssh/just_in_case.pub" ];
         root.openssh.authorizedKeys.keys = lib.splitString "\n" (builtins.readFile "/root/.ssh/authorized_keys");
     };
 
