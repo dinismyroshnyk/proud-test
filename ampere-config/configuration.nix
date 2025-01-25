@@ -8,17 +8,6 @@ in
         ../disk-config.nix
     ];
 
-    # Sops configuration.
-    sops = {
-        defaultSopsFile = ./secrets/secrets.yaml;
-        defaultSopsFormat = "yaml";
-        age.keyFile = "/var/lib/sops-nix/key.txt";
-        secrets = {
-            "django-env/db-name" = {};
-            "django-env/db-user" = {};
-        };
-    };
-
     # Allow unfree packages.
     nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
         "netdata"
@@ -142,7 +131,7 @@ in
             ExecStart = "${pkgs.bash}/bin/bash -c 'source projectenv/bin/activate && python manage.py runserver'";
             Restart = "always";
             RestartSec = "30s";
-            EnvironmentFile = "/testing/app/.env";
+            EnvironmentFile = "/etc/django-environment";
         };
 
         environment = {
@@ -151,22 +140,15 @@ in
         };
     };
 
-    # Generate .env file for Django.
-    systemd.services.generate-django-env = {
-        wantedBy = [ "django-app.service" ];
-        before = [ "django-app.service" ];
-        serviceConfig = {
-            Type = "oneshot";
-            User = "root";
-            Group = "root";
-        };
-        script = ''
-            rm /testing/app/.env
-            echo "DB_NAME=$(cat ${config.sops.secrets."django-env/db-name".path})" >> /testing/app/.env
-            echo "DB_USER=$(cat ${config.sops.secrets."django-env/db-user".path})" >> /testing/app/.env
-            echo "DB_HOST=localhost" >> /testing/app/.env
-            echo "DB_PORT=5432" >> /testing/app/.env
+    # Create environment file for secrets
+    environment.etc."django-environment" = {
+        text = ''
+            DB_NAME=proud_db
+            DB_USER=root
+            DB_HOST=localhost
+            DB_PORT=5432
         '';
+        mode = "0600";
     };
 
     # System packages.
