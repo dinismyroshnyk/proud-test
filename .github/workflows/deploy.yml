@@ -60,6 +60,7 @@ jobs:
                     script: |
                         cd /var/lib/netdata
                         if [ ! -f htpasswd ]; then
+                            rm htpasswd
                             sudo htpasswd -c -b htpasswd ${{ secrets.NETDATA_USERNAME }} ${{ secrets.NETDATA_PASSWORD }}
                             sudo chmod 640 htpasswd
                             sudo chown root:nginx htpasswd
