@@ -59,15 +59,8 @@ in
                 proxyPass = "http://127.0.0.1:19999/";
                 proxyWebsockets = true;
                 extraConfig = ''
-                    proxy_set_header Connection "";
-                    proxy_set_header X-Forwarded-Host $host;
-                    proxy_set_header X-Forwarded-Server $host;
-
-                    proxy_intercept_errors on;
-                    error_page 500 502 503 504 /500.html;
-
-                    auth_basic "Netdata Dashboard";
-                    auth_basic_user_file /var/lib/netdata/htpasswd;
+                    # auth_basic "Netdata Dashboard";
+                    # auth_basic_user_file /var/lib/netdata/htpasswd;
 
                     proxy_set_header Host $host;
                     proxy_set_header X-Real-IP $remote_addr;
