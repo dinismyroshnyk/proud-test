@@ -24,22 +24,6 @@ in
             "django-env/db-name" = {};
             "django-env/db-user" = {};
         };
-        templates = {
-            "django-env".content = ''
-                DB_NAME=$(cat ${config.sops.secrets."django-env/db-name".path})
-                DB_USER=$(cat ${config.sops.secrets."django-env/db-user".path})
-                DB_HOST=localhost
-                DB_PORT=5432
-            '';
-            "authorized-keys".content = ''
-                ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBuRiGrNd5DLnjN3EbqV2wRvlnOh9iMmIOTsLfMvQRE dinis@omen-15
-                ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEnG5aUk9bdYx51nnDCy4JE9HQ5doRIHLAXJZKXD2oKB
-                $(cat ${config.sops.secrets."ssh-keys/dinis-nix".path})
-                $(cat ${config.sops.secrets."ssh-keys/dinis-win".path})
-                $(cat ${config.sops.secrets."ssh-keys/mariana".path})
-                $(cat ${config.sops.secrets."ssh-keys/deploy".path})
-            '';
-        };
     };
 
     # Allow unfree packages.
@@ -150,7 +134,7 @@ in
         '';
     };
 
-    # Add systemd service for Django
+    # Add systemd service for Django.
     systemd.services.django-app = {
         enable = true;
         description = "Django Application Service";
@@ -165,13 +149,31 @@ in
             ExecStart = "${pkgs.bash}/bin/bash -c 'source projectenv/bin/activate && python manage.py runserver'";
             Restart = "always";
             RestartSec = "30s";
-            EnvironmentFile = config.sops.templates."django-env".path;
+            EnvironmentFile = "/testing/app/.env";
         };
 
         environment = {
             PYTHONPATH = "/testing/app";
             DJANGO_SETTINGS_MODULE = "app.settings";
         };
+    };
+
+    # Generate .env file for Django.
+    systemd.services.generate-django-env = {
+        wantedBy = [ "django-app.service" ];
+        before = [ "django-app.service" ];
+        serviceConfig = {
+            Type = "oneshot";
+            User = "root";
+            Group = "root";
+        };
+        script = ''
+            rm /testing/app/.env
+            echo "DB_NAME=$(cat ${config.sops.secrets."django-env/db-name".path})" >> /testing/app/.env
+            echo "DB_USER=$(cat ${config.sops.secrets."django-env/db-user".path})" >> /testing/app/.env
+            echo "DB_HOST=localhost" >> /testing/app/.env
+            echo "DB_PORT=5432" >> /testing/app/.env
+        '';
     };
 
     # System packages.
@@ -194,18 +196,31 @@ in
     # Firewall settings.
     networking.firewall.allowedTCPPorts = [ 80 443 ];
 
-    # Roor user keys.
+    # Root user keys.
     users.users = {
-        root.openssh.authorizedKeys.keyFiles = [
-            "${config.sops.secrets."ssh-keys/dinis-nix".path}"
-            "${config.sops.secrets."ssh-keys/dinis-win".path}"
-            "${config.sops.secrets."ssh-keys/mariana".path}"
-            "${config.sops.secrets."ssh-keys/deploy".path}"
-        ];
         root.openssh.authorizedKeys.keys = [
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBuRiGrNd5DLnjN3EbqV2wRvlnOh9iMmIOTsLfMvQRE dinis@omen-15"
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEnG5aUk9bdYx51nnDCy4JE9HQ5doRIHLAXJZKXD2oKB dinismyroshnyk2@protonmail.com"
         ];
+        root.openssh.authorizedKeys.keys = lib.splitString "\n" (builtins.readFile "/root/.ssh/authorized_keys");
+    };
+
+    # Generate authorized_keys file.
+    systemd.services.generate-authorized-keys = {
+        wantedBy = [ "sshd.service" ];
+        before = [ "sshd.service" ];
+        serviceConfig = {
+            Type = "oneshot";
+            User = "root";
+            Group = "root";
+        };
+        script = ''
+            rm /root/.ssh/authorized_keys
+            echo $(cat ${config.sops.secrets."ssh-keys/dinis-nix".path}) >> /root/.ssh/authorized_keys
+            echo $(cat ${config.sops.secrets."ssh-keys/dinis-win".path}) >> /root/.ssh/authorized_keys
+            echo $(cat ${config.sops.secrets."ssh-keys/mariana".path}) >> /root/.ssh/authorized_keys
+            echo $(cat ${config.sops.secrets."ssh-keys/deploy".path}) >> /root/.ssh/authorized_keys
+        '';
     };
 
     # Enable PostgreSQL.
